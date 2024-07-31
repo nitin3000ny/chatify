@@ -67,20 +67,23 @@ function SideDrawer() {
       });
       return;
     }
-
+  
     try {
       setLoading(true);
-
+  
       const config = {
         headers: {
           Authorization: `Bearer ${user.token}`,
         },
       };
-
+  
       const { data } = await axios.get(`/api/user?search=${search}`, config);
-
+  
       setLoading(false);
       setSearchResult(data);
+  
+      // Debug: Log search results
+      console.log("Search results:", data);
     } catch (error) {
       toast({
         title: "Error Occured!",
@@ -92,6 +95,7 @@ function SideDrawer() {
       });
     }
   };
+  
 
   const accessChat = async (userId) => {
     console.log(userId);

@@ -5,19 +5,43 @@ const generateToken = require("../config/generateToken");
 //@description     Get or Search all users
 //@route           GET /api/user?search=
 //@access          Public
-const allUsers = asyncHandler(async (req, res) => {
-  const keyword = req.query.search
-    ? {
-        $or: [
-          { name: { $regex: req.query.search, $options: "i" } },
-          { email: { $regex: req.query.search, $options: "i" } },
-        ],
-      }
-    : {};
+const mongoose = require('mongoose');
 
-  const users = await User.find(keyword).find({ _id: { $ne: req.user._id } });
-  res.send(users);
+const allUsers = asyncHandler(async (req, res) => {
+  try {
+    // Log the current user ID for debugging
+    console.log("Current user ID:", req.user._id);
+
+    const keyword = req.query.search
+      ? {
+          $or: [
+            { name: { $regex: req.query.search, $options: "i" } },
+            { email: { $regex: req.query.search, $options: "i" } },
+          ],
+        }
+      : {};
+
+    // Combine the keyword with the condition to exclude the current user
+    const searchCriteria = {
+      ...keyword,
+      _id: { $ne: mongoose.Types.ObjectId(req.user._id) }
+    };
+
+    // Log the search criteria for debugging
+    console.log("Search criteria:", searchCriteria);
+
+    const users = await User.find(searchCriteria);
+
+    // Log the found users for debugging
+    console.log("Found users:", users);
+
+    res.send(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).send({ message: "Error fetching users" });
+  }
 });
+
 
 //@description     Register new user
 //@route           POST /api/user/
